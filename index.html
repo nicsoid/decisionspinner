@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Decision Spinner</title>
+    <title data-key="title">Decision Spinner</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -24,10 +24,22 @@
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center justify-center min-h-screen p-4">
 
+    <!-- Language Selector -->
+    <div class="w-full max-w-md mx-auto mb-4">
+        <select id="lang-select" class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="en">English (English)</option>
+            <option value="uk">Українська (Ukrainian)</option>
+            <option value="es">Español (Spanish)</option>
+            <option value="de">Deutsch (German)</option>
+            <option value="fr">Français (French)</option>
+            <option value="zh">中文 (Chinese)</option>
+        </select>
+    </div>
+
     <div class="w-full max-w-md mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 text-center">
         
-        <h1 class="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Decision Spinner</h1>
-        <p class="text-gray-600 dark:text-gray-400 mb-6">Add options and spin the wheel!</p>
+        <h1 class="text-3xl font-bold mb-2 text-gray-900 dark:text-white" data-key="heading">Decision Spinner</h1>
+        <p class="text-gray-600 dark:text-gray-400 mb-6" data-key="subheading">Add options and spin the wheel!</p>
 
         <!-- Spinner Wheel -->
         <div class="relative w-80 h-80 mx-auto mb-6">
@@ -39,14 +51,14 @@
         <div id="result-display" class="text-2xl font-semibold my-4 h-8 transition-opacity duration-300 opacity-0"></div>
 
         <!-- Spin Button -->
-        <button id="spin-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform active:scale-95 disabled:bg-gray-400 disabled:cursor-not-allowed">
+        <button id="spin-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform active:scale-95 disabled:bg-gray-400 disabled:cursor-not-allowed" data-key="spinButton">
             Spin the Wheel!
         </button>
 
         <!-- Option Input -->
         <div class="mt-6">
             <div class="flex gap-2">
-                <input type="text" id="option-input" class="flex-grow bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Add an option...">
+                <input type="text" id="option-input" class="flex-grow bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Add an option..." data-key-placeholder="placeholder">
                 <button id="add-btn" class="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 font-bold py-2 px-4 rounded-lg transition-transform transform active:scale-95">+</button>
             </div>
         </div>
@@ -63,7 +75,7 @@
     </div>
     
     <footer class="mt-8 text-center text-gray-500 dark:text-gray-400 text-sm">
-        <!--<p>Built in a day!</p>-->
+        <!--<p data-key="footer">Built in a day!</p>-->
     </footer>
 
     <script>
@@ -75,6 +87,7 @@
         const optionsContainer = document.getElementById('options-container');
         const resultDisplay = document.getElementById('result-display');
         const optionsLegend = document.getElementById('options-legend');
+        const langSelect = document.getElementById('lang-select');
 
         let options = ['Pizza 🍕', 'Tacos 🌮', 'Sushi 🍣', 'Pasta 🍝'];
         let startAngle = 0;
@@ -86,6 +99,57 @@
         let isSpinning = false;
         
         const colors = ["#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16", "#22c55e", "#10b981", "#14b8a6", "#06b6d4", "#0ea5e9", "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#d946ef", "#ec4899", "#f43f5e"];
+
+        const translations = {
+            'en': {
+                title: "Decision Spinner",
+                heading: "Decision Spinner",
+                subheading: "Add options and spin the wheel!",
+                spinButton: "Spin the Wheel!",
+                placeholder: "Add an option...",
+                footer: "Built in a day!"
+            },
+            'uk': {
+                title: "Колесо Рішень",
+                heading: "Колесо Рішень",
+                subheading: "Додайте варіанти та крутіть колесо!",
+                spinButton: "Крутити колесо!",
+                placeholder: "Додати варіант...",
+                footer: "Створено за день!"
+            },
+            'es': {
+                title: "Rueda de Decisiones",
+                heading: "Rueda de Decisiones",
+                subheading: "¡Añade opciones y gira la rueda!",
+                spinButton: "¡Girar la Rueda!",
+                placeholder: "Añadir una opción...",
+                footer: "¡Hecho en un día!"
+            },
+            'de': {
+                title: "Entscheidungsrad",
+                heading: "Entscheidungsrad",
+                subheading: "Optionen hinzufügen und das Rad drehen!",
+                spinButton: "Rad drehen!",
+                placeholder: "Option hinzufügen...",
+                footer: "An einem Tag gebaut!"
+            },
+            'fr': {
+                title: "Roue de Décision",
+                heading: "Roue de Décision",
+                subheading: "Ajoutez des options et tournez la roue !",
+                spinButton: "Tourner la roue !",
+                placeholder: "Ajouter une option...",
+                footer: "Fait en un jour !"
+            },
+            'zh': {
+                title: "决策转盘",
+                heading: "决策转盘",
+                subheading: "添加选项，转动转盘！",
+                spinButton: "转动转盘！",
+                placeholder: "添加一个选项...",
+                footer: "一天之内建成！"
+            }
+        };
 
         function drawSpinner() {
             const outsideRadius = 150;
@@ -240,15 +304,59 @@
             }
         });
         
+        function setLanguage(lang) {
+            const t = translations[lang] || translations['en'];
+            
+            // Set text for elements with data-key
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (t[key]) {
+                    el.textContent = t[key];
+                }
+            });
+
+            // Set placeholders
+            document.querySelectorAll('[data-key-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-key-placeholder');
+                if (t[key]) {
+                    el.placeholder = t[key];
+                }
+            });
+
+            // Set document title
+            document.title = t.title;
+
+            // Save preference
+            localStorage.setItem('decisionSpinnerLang', lang);
+        }
+
+        langSelect.addEventListener('change', (e) => {
+            setLanguage(e.target.value);
+        });
+
         // Initial Load
         window.onload = () => {
             loadOptions();
+            
+            // Detect browser language
+            const browserLang = navigator.language.split('-')[0]; // 'en-US' -> 'en'
+            let defaultLang = 'en'; // Default to English
+            
+            // Check if we support the browser's language
+            if (translations.hasOwnProperty(browserLang)) {
+                defaultLang = browserLang;
+            }
+
+            // Use saved language if it exists, otherwise use the detected default
+            const savedLang = localStorage.getItem('decisionSpinnerLang') || defaultLang;
+            
+            langSelect.value = savedLang;
+            setLanguage(savedLang);
+
             updateOptionsList();
         };
 
     </script>
 </body>
 </html>
-
-
 
