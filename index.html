@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decision Spinner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            touch-action: manipulation; /* Prevents double-tap zoom on mobile */
+        }
+        #spinner-canvas {
+            transition: transform 4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .option-tag {
+            transition: all 0.2s ease-in-out;
+        }
+        .option-tag:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-md mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 text-center">
+        
+        <h1 class="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Decision Spinner</h1>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">Add options and spin the wheel!</p>
+
+        <!-- Spinner Wheel -->
+        <div class="relative w-80 h-80 mx-auto mb-6">
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-10" style="width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid #F87171;"></div>
+            <canvas id="spinner-canvas" width="320" height="320"></canvas>
+        </div>
+
+        <!-- Result Display -->
+        <div id="result-display" class="text-2xl font-semibold my-4 h-8 transition-opacity duration-300 opacity-0"></div>
+
+        <!-- Spin Button -->
+        <button id="spin-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform active:scale-95 disabled:bg-gray-400 disabled:cursor-not-allowed">
+            Spin the Wheel!
+        </button>
+
+        <!-- Option Input -->
+        <div class="mt-6">
+            <div class="flex gap-2">
+                <input type="text" id="option-input" class="flex-grow bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Add an option...">
+                <button id="add-btn" class="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 font-bold py-2 px-4 rounded-lg transition-transform transform active:scale-95">+</button>
+            </div>
+        </div>
+        
+        <!-- Options List -->
+        <div id="options-container" class="mt-4 flex flex-wrap justify-center gap-2">
+            <!-- Options will be added here -->
+        </div>
+        
+        <!-- Options Legend (for > 7 options) -->
+        <div id="options-legend" class="mt-4 text-left w-full max-h-40 overflow-y-auto">
+             <!-- Legend will be added here for >7 options -->
+        </div>
+    </div>
+    
+    <footer class="mt-8 text-center text-gray-500 dark:text-gray-400 text-sm">
+        <!--<p>Built in a day!</p>-->
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('spinner-canvas');
+        const ctx = canvas.getContext('2d');
+        const spinBtn = document.getElementById('spin-btn');
+        const addBtn = document.getElementById('add-btn');
+        const optionInput = document.getElementById('option-input');
+        const optionsContainer = document.getElementById('options-container');
+        const resultDisplay = document.getElementById('result-display');
+        const optionsLegend = document.getElementById('options-legend');
+
+        let options = ['Pizza 🍕', 'Tacos 🌮', 'Sushi 🍣', 'Pasta 🍝'];
+        let startAngle = 0;
+        let arc = Math.PI / (options.length / 2);
+        let spinTimeout = null;
+        let spinAngleStart = 10;
+        let spinTime = 0;
+        let spinTimeTotal = 0;
+        let isSpinning = false;
+        
+        const colors = ["#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16", "#22c55e", "#10b981", "#14b8a6", "#06b6d4", "#0ea5e9", "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#d946ef", "#ec4899", "#f43f5e"];
+
+        function drawSpinner() {
+            const outsideRadius = 150;
+            const textRadius = 110;
+            const insideRadius = 0;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            
+            ctx.font = 'bold 16px Inter, sans-serif';
+
+            for (let i = 0; i < options.length; i++) {
+                const angle = startAngle + i * arc;
+                ctx.fillStyle = colors[i % colors.length];
+
+                ctx.beginPath();
+                ctx.arc(160, 160, outsideRadius, angle, angle + arc, false);
+                ctx.arc(160, 160, insideRadius, angle + arc, angle, true);
+                ctx.stroke();
+                ctx.fill();
+
+                ctx.save();
+                ctx.fillStyle = "white";
+                ctx.translate(160 + Math.cos(angle + arc / 2) * textRadius, 160 + Math.sin(angle + arc / 2) * textRadius);
+                ctx.rotate(angle + arc / 2 + Math.PI / 2);
+                const text = options.length > 7 ? (i + 1).toString() : options[i];
+                ctx.fillText(text, -ctx.measureText(text).width / 2, 0);
+                ctx.restore();
+            }
+        }
+
+        function rotate() {
+            const spinAngle = Math.random() * 10 + 10; // Random spin force
+            startAngle += (spinAngle * Math.PI / 180);
+            drawSpinner();
+        }
+        
+        function spin() {
+            isSpinning = true;
+            spinBtn.disabled = true;
+            resultDisplay.classList.add('opacity-0');
+
+            const randomSpins = Math.floor(Math.random() * 4) + 8; // 8 to 11 full rotations
+            const degrees = randomSpins * 360 + Math.random() * 360;
+            const totalRotation = canvas.style.transform ? parseInt(canvas.style.transform.match(/(\d+)/)[0]) : 0;
+            
+            canvas.style.transition = 'transform 4s cubic-bezier(0.25, 1, 0.5, 1)';
+            canvas.style.transform = `rotate(${totalRotation + degrees}deg)`;
+
+            setTimeout(() => {
+                // Correctly calculate the winning segment
+                const finalRotation = (totalRotation + degrees) % 360;
+                const arcSize = 360 / options.length;
+                
+                // The pointer is at 270 degrees (top). We calculate the angle on the wheel
+                // that is aligned with this pointer after rotation.
+                // (360 - finalRotation) adjusts for the clockwise CSS rotation.
+                // We add 270 because the pointer is 270 degrees from the 0-degree start (3 o'clock position).
+                const winningAngle = (360 - finalRotation + 270) % 360;
+                const index = Math.floor(winningAngle / arcSize);
+
+                resultDisplay.textContent = options[index];
+                resultDisplay.classList.remove('opacity-0');
+                
+                isSpinning = false;
+                spinBtn.disabled = false;
+            }, 4000); // Corresponds to the transition duration
+        }
+
+        function updateOptionsList() {
+            optionsContainer.innerHTML = '';
+            optionsLegend.innerHTML = ''; // Clear both views
+
+            if (options.length > 7) {
+                // Populate the legend with a numbered list and delete buttons
+                let legendHtml = '<ol class="list-decimal list-inside space-y-1">';
+                options.forEach((option, index) => {
+                    legendHtml += `
+                        <li class="flex justify-between items-center text-gray-700 dark:text-gray-300">
+                            <span class="truncate pr-2">${option}</span>
+                            <button class="text-red-500 hover:text-red-700 font-bold text-lg" data-index="${index}">&times;</button>
+                        </li>`;
+                });
+                legendHtml += '</ol>';
+                optionsLegend.innerHTML = legendHtml;
+            } else {
+                // Populate the tags for fewer options
+                options.forEach((option, index) => {
+                    const tag = document.createElement('div');
+                    tag.className = 'option-tag bg-gray-200 dark:bg-gray-700 text-sm rounded-full px-3 py-1 flex items-center gap-2';
+                    tag.innerHTML = `
+                        <span>${option}</span>
+                        <button class="text-red-500 hover:text-red-700" data-index="${index}">&times;</button>
+                    `;
+                    optionsContainer.appendChild(tag);
+                });
+            }
+            
+            arc = Math.PI / (options.length / 2);
+            drawSpinner();
+            saveOptions();
+            spinBtn.disabled = options.length < 2;
+        }
+
+        function addOption(optionText) {
+             if (optionText && !options.includes(optionText)) {
+                options.push(optionText);
+                updateOptionsList();
+            }
+            optionInput.value = '';
+        }
+
+        function saveOptions() {
+            localStorage.setItem('decisionSpinnerOptions', JSON.stringify(options));
+        }
+
+        function loadOptions() {
+            const savedOptions = localStorage.getItem('decisionSpinnerOptions');
+            if (savedOptions) {
+                options = JSON.parse(savedOptions);
+            }
+        }
+        
+        // Event Listeners
+        spinBtn.addEventListener('click', () => {
+            if (!isSpinning && options.length > 1) {
+                spin();
+            }
+        });
+
+        addBtn.addEventListener('click', () => addOption(optionInput.value.trim()));
+        optionInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addOption(optionInput.value.trim());
+            }
+        });
+
+        optionsContainer.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                const index = e.target.dataset.index;
+                options.splice(index, 1);
+                updateOptionsList();
+            }
+        });
+
+        optionsLegend.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                const index = e.target.dataset.index;
+                options.splice(index, 1);
+                updateOptionsList();
+            }
+        });
+        
+        // Initial Load
+        window.onload = () => {
+            loadOptions();
+            updateOptionsList();
+        };
+
+    </script>
+</body>
+</html>
+
+
+
